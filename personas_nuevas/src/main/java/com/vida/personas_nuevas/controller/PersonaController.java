@@ -1,11 +1,8 @@
 package com.vida.personas_nuevas.controller;
 
-import com.vida.personas_nuevas.DTO.PersonaDTO;
-import com.vida.personas_nuevas.entities.PersonaEntity;
 import com.vida.personas_nuevas.infraestructure.abstract_services.IPersonaService;
 import com.vida.personas_nuevas.models.request.PersonaRequest;
 import com.vida.personas_nuevas.models.response.PersonaResponse;
-import com.vida.personas_nuevas.repository.PersonaRepository;
 
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
