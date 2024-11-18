@@ -9,7 +9,7 @@ BEGIN
                WHEN edad >= 16 AND edad <= 20 THEN 'Youth'
                WHEN edad >= 21 AND edad <= 60 THEN 'Pro'
                ELSE 'No entra en categorías'
-           ENDVARCHAR
+           END::VARCHAR
     FROM primeravezprueba;
 END;
 $$ LANGUAGE plpgsql;
