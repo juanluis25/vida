@@ -4,17 +4,28 @@ import static com.vida.personas_nuevas.excepciones.ErrorCodes.INTERNAL_SERVER_ER
 import com.vida.personas_nuevas.excepciones.ErroresExceptions;
 import com.vida.personas_nuevas.entities.PersonaEntity;
 import com.vida.personas_nuevas.infraestructure.abstract_services.IPersonaService;
+import com.vida.personas_nuevas.infraestructure.util.SortType;
 import com.vida.personas_nuevas.models.request.PersonaRequest;
+import com.vida.personas_nuevas.models.response.GrupoResponse;
 import com.vida.personas_nuevas.models.response.PersonaResponse;
 import com.vida.personas_nuevas.repository.PersonaRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.time.LocalDateTime;
 
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static com.vida.personas_nuevas.infraestructure.abstract_services.CatalogService.ORDENADO_POR_FECHA;
+import static com.vida.personas_nuevas.infraestructure.abstract_services.CatalogService.ORDENADO_POR_NOMBRE;
 import static org.apache.logging.log4j.LogManager.getLogger;
 
 
@@ -25,6 +36,16 @@ import static org.apache.logging.log4j.LogManager.getLogger;
 public class PersonaService implements IPersonaService {
     private static final Logger LOGGER = getLogger(PersonaService.class);
     private final PersonaRepository personaRepository;
+    @Override
+    public Page<PersonaResponse> readAll(Integer page, Integer size, SortType sortType) {
+        PageRequest pageRequest = null;
+        switch (sortType) {
+            case NINGUNO -> pageRequest = PageRequest.of(page, size);
+            case ASCENDENTE -> pageRequest = PageRequest.of(page, size, Sort.by(ORDENADO_POR_NOMBRE).ascending());
+            case DESCENDENTE -> pageRequest = PageRequest.of(page, size, Sort.by(ORDENADO_POR_FECHA).descending());
+        }
+        return this.personaRepository.findAll(pageRequest).map(this::entityToResponse);
+    }
     @Override
     public PersonaResponse crear(PersonaRequest personaRequest) {
         try {
@@ -127,6 +148,15 @@ public class PersonaService implements IPersonaService {
         }
 
     }
+    @Override
+    public Set<GrupoResponse> categoriaGrupoPorEdades() {
+        Set<Object[]> resultados = this.personaRepository.categoriaGrupoPorEdades();
+
+        return resultados.stream()
+                .map(resultado->new GrupoResponse((String)resultado[0], (String)resultado[1]))
+                        .collect(Collectors
+                                .toSet());
+    }
     private PersonaResponse entityToResponse (PersonaEntity entity){
         try{
             var response = new PersonaResponse();
@@ -143,6 +173,5 @@ public class PersonaService implements IPersonaService {
                     new ErroresExceptions(
                             INTERNAL_SERVER_ERROR_CODE.name());
         }
-
     }
 }

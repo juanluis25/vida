@@ -12,7 +12,7 @@ public interface CrudService <REQUEST, RESPONSE, ID>{
     /**
      * Consulta todos los datos registrados.
      *
-     * @return {@link PersonaResponse} con la consilta de registros.
+     * @return {@link PersonaResponse} con la consulta de registros.
      */
     RESPONSE obtener(ID id);
     /**
@@ -24,7 +24,7 @@ public interface CrudService <REQUEST, RESPONSE, ID>{
     /**
      * Borra los datos registrados.
      *
-     * @return {@link PersonaResponse} con los registros que se han borrado.
+     * @return {@link Void} con el status que el borrado fue exitoso.
      */
     void borrar(ID id);
 
