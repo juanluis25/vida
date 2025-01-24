@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:latest
+    ports:
+      - 5432:5432
+    container_name: Vida
+    restart: always
+    volumes:
+      - ./db/sql/create_schema.sql:/docker-entrypoint-initdb.d/create_schema.sql
+    environment:
+      - POSTGRES_DB=Vida
+      - POSTGRES_USER=juanluis
+      - POSTGRES_PASSWORD=1234

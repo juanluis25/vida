@@ -28,4 +28,5 @@ public class PersonaResponse implements Serializable {
     private String nombrevoluntario;
     private String condicionvisita;
     private String grupopequeñointeres;
+
 }

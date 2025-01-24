@@ -12,14 +12,15 @@ import java.io.Serializable;
 @Builder
 public class PersonaRequest implements Serializable {
     private String nombre;
-    private String apellidoPaterno;
-    private String apellidoMaterno;
+    private String apellidopaterno;
+    private String apellidomaterno;
     private Integer edad;
     private String telefono;
-    private String estadoCivil;
-    private String comoSupisteDeIglesia;
+    private String estadocivil;
+    private String comosupistedeiglesia;
     private String colonia;
-    private String nombreVoluntario;
-    private String condicionVisita;
-    private String grupoPequeñoInteres;
+    private String nombrevoluntario;
+    private String condicionvisita;
+    private String grupopequeñointeres;
+    private Boolean oraciondefe;
 }

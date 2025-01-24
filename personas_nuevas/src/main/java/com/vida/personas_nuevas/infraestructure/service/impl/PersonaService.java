@@ -1,12 +1,12 @@
 package com.vida.personas_nuevas.infraestructure.service.impl;
 
 import static com.vida.personas_nuevas.excepciones.ErrorCodes.INTERNAL_SERVER_ERROR_CODE;
+
 import com.vida.personas_nuevas.excepciones.ErroresExceptions;
 import com.vida.personas_nuevas.entities.PersonaEntity;
 import com.vida.personas_nuevas.infraestructure.abstract_services.IPersonaService;
 import com.vida.personas_nuevas.infraestructure.util.SortType;
 import com.vida.personas_nuevas.models.request.PersonaRequest;
-import com.vida.personas_nuevas.models.response.GrupoResponse;
 import com.vida.personas_nuevas.models.response.PersonaResponse;
 import com.vida.personas_nuevas.repository.PersonaRepository;
 import lombok.AllArgsConstructor;
@@ -20,7 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -34,8 +35,10 @@ import static org.apache.logging.log4j.LogManager.getLogger;
 @Slf4j
 @AllArgsConstructor
 public class PersonaService implements IPersonaService {
+
     private static final Logger LOGGER = getLogger(PersonaService.class);
     private final PersonaRepository personaRepository;
+
     @Override
     public Page<PersonaResponse> readAll(Integer page, Integer size, SortType sortType) {
         PageRequest pageRequest = null;
@@ -46,22 +49,60 @@ public class PersonaService implements IPersonaService {
         }
         return this.personaRepository.findAll(pageRequest).map(this::entityToResponse);
     }
+
+    @Override
+    public Set<PersonaResponse> findAll(){
+        try {
+            List<PersonaEntity> obtenerPersonas = this.personaRepository.findAll();
+            return obtenerPersonas.stream()
+                    .map(this::entityToResponse)
+                    .collect(Collectors.toSet());
+        } catch (final Exception exc) {
+            LOGGER.error(exc.getMessage());
+            LOGGER.error(exc);
+            throw new ErroresExceptions(INTERNAL_SERVER_ERROR_CODE.name());
+        }
+    }
+
+    @Override
+    public Optional<List<PersonaEntity>> filtrarPersonas(String nombre, String apellidopaterno, String apellidomaterno, String telefono){
+
+        if (nombre != null){
+            LOGGER.info("Nombre: {}", nombre);
+            return personaRepository.findByNombre(nombre);
+        }
+        if (apellidopaterno != null){
+            LOGGER.info("Apellido Paterno: {}", apellidopaterno);
+            return personaRepository.findByApellidopaterno(apellidopaterno);
+        }
+        if (apellidomaterno != null){
+            LOGGER.info("Apellido Materno: {}", apellidomaterno);
+            return personaRepository.findByApellidomaterno(apellidomaterno);
+        }
+        if (telefono != null){
+            LOGGER.info("Telefono: {}", telefono);
+            return personaRepository.findByTelefono(telefono);
+        }
+       return Optional.of((personaRepository.findAll()));
+      }
+
     @Override
     public PersonaResponse crear(PersonaRequest personaRequest) {
         try {
             var registrarPersona = PersonaEntity.builder()
                     .fecha(LocalDateTime.now())
                     .nombre(personaRequest.getNombre())
-                    .apellidopaterno(personaRequest.getApellidoPaterno())
-                    .apellidomaterno(personaRequest.getApellidoMaterno())
+                    .apellidopaterno(personaRequest.getApellidopaterno())
+                    .apellidomaterno(personaRequest.getApellidomaterno())
                     .edad(personaRequest.getEdad())
                     .telefono(personaRequest.getTelefono())
-                    .estadocivil(personaRequest.getEstadoCivil())
-                    .comosupistedeiglesia(personaRequest.getComoSupisteDeIglesia())
+                    .estadocivil(personaRequest.getEstadocivil())
+                    .comosupistedeiglesia(personaRequest.getComosupistedeiglesia())
                     .colonia(personaRequest.getColonia())
-                    .nombrevoluntario(personaRequest.getNombreVoluntario())
-                    .condicionvisita(personaRequest.getCondicionVisita())
-                    .grupopequeñointeres(personaRequest.getGrupoPequeñoInteres())
+                    .nombrevoluntario(personaRequest.getNombrevoluntario())
+                    .condicionvisita(personaRequest.getCondicionvisita())
+                    .grupopequeñointeres(personaRequest.getGrupopequeñointeres())
+                    .oraciondefe(personaRequest.getOraciondefe())
                     .build();
 
             var personaRegistrada = personaRepository.save(registrarPersona);
@@ -103,15 +144,17 @@ public class PersonaService implements IPersonaService {
         try{
             var actualizarPersona = this.personaRepository.findById(id).orElseThrow();
             actualizarPersona.setNombre(personaRequest.getNombre());
-            actualizarPersona.setApellidomaterno(personaRequest.getApellidoPaterno());
-            actualizarPersona.setApellidomaterno(personaRequest.getApellidoMaterno());
+            actualizarPersona.setApellidopaterno(personaRequest.getApellidopaterno());
+            actualizarPersona.setApellidomaterno(personaRequest.getApellidomaterno());
             actualizarPersona.setEdad(personaRequest.getEdad());
-            actualizarPersona.setEstadocivil(personaRequest.getEstadoCivil());
-            actualizarPersona.setComosupistedeiglesia(personaRequest.getComoSupisteDeIglesia());
+            actualizarPersona.setEstadocivil(personaRequest.getEstadocivil());
+            actualizarPersona.setTelefono(personaRequest.getTelefono());
+            actualizarPersona.setComosupistedeiglesia(personaRequest.getComosupistedeiglesia());
             actualizarPersona.setColonia(personaRequest.getColonia());
-            actualizarPersona.setNombrevoluntario(personaRequest.getNombreVoluntario());
-            actualizarPersona.setCondicionvisita(personaRequest.getCondicionVisita());
-            actualizarPersona.setGrupopequeñointeres(personaRequest.getGrupoPequeñoInteres());
+            actualizarPersona.setNombrevoluntario(personaRequest.getNombrevoluntario());
+            actualizarPersona.setCondicionvisita(personaRequest.getCondicionvisita());
+            actualizarPersona.setGrupopequeñointeres(personaRequest.getGrupopequeñointeres());
+            actualizarPersona.setOraciondefe(personaRequest.getOraciondefe());
 
             var personasActualizada = this.personaRepository.save(actualizarPersona);
             LOGGER.info("La persona {} se actualizó ", personasActualizada);
@@ -148,15 +191,7 @@ public class PersonaService implements IPersonaService {
         }
 
     }
-    @Override
-    public Set<GrupoResponse> categoriaGrupoPorEdades() {
-        Set<Object[]> resultados = this.personaRepository.categoriaGrupoPorEdades();
 
-        return resultados.stream()
-                .map(resultado->new GrupoResponse((String)resultado[0], (String)resultado[1]))
-                        .collect(Collectors
-                                .toSet());
-    }
     private PersonaResponse entityToResponse (PersonaEntity entity){
         try{
             var response = new PersonaResponse();

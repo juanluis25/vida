@@ -1,9 +1,10 @@
 package com.vida.personas_nuevas.controller;
 
+import com.vida.personas_nuevas.infraestructure.abstract_services.CatalogService;
 import com.vida.personas_nuevas.infraestructure.abstract_services.IPersonaService;
+import com.vida.personas_nuevas.infraestructure.service.impl.PersonaService;
 import com.vida.personas_nuevas.infraestructure.util.SortType;
 import com.vida.personas_nuevas.models.request.PersonaRequest;
-import com.vida.personas_nuevas.models.response.GrupoResponse;
 import com.vida.personas_nuevas.models.response.PersonaResponse;
 
 import lombok.AllArgsConstructor;
@@ -12,12 +13,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
+
 import java.util.Objects;
 import java.util.Set;
 
 import static org.apache.logging.log4j.LogManager.getLogger;
+import static org.springframework.http.ResponseEntity.ok;
 
+
+@CrossOrigin("http://localhost:4200")
 @RestController
 @RequestMapping(path = "api/v1/personasnuevas")
 
@@ -25,7 +29,9 @@ import static org.apache.logging.log4j.LogManager.getLogger;
 public class PersonaController {
 
     private static final Logger LOGGER = getLogger(PersonaController.class);
-    private final IPersonaService personaService;
+
+    private final PersonaService personaService;
+
     /**
      * Método que obtiene el <strong>listado de personas que existen</strong>.
      *
@@ -40,26 +46,45 @@ public class PersonaController {
         var response = this.personaService.readAll(page, size, sortType);
         return response.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(response);
     }
+
+    @GetMapping(path = "findAll")
+    public ResponseEntity<Set<PersonaResponse>> findAll(){
+        Set<PersonaResponse> obtenerTodo = this.personaService.findAll();
+        return ResponseEntity.ok(obtenerTodo);
+    }
+
+    @GetMapping(path = "filtrar-personas")
+    public ResponseEntity <?> filtrarPersonas(@RequestParam(required = false) String nombre,
+                                              @RequestParam(required = false) String apellidomaterno,
+                                              @RequestParam(required = false) String apellidopaterno,
+                                              @RequestParam(required = false) String telefono){
+        var respuesta = personaService.filtrarPersonas(nombre, apellidopaterno, apellidomaterno, telefono);
+
+        if (respuesta.isPresent()) {
+            return ResponseEntity.ok(respuesta);
+        }
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping
     public ResponseEntity<PersonaResponse> post(@RequestBody PersonaRequest request){
-        return ResponseEntity.ok(personaService.crear(request));
+        LOGGER.info("{}", request);
+        return ok(personaService.crear(request));
     }
+
     @GetMapping(path = "{id}")
     public ResponseEntity<PersonaResponse> get(@PathVariable Long id){
-        return ResponseEntity.ok(this.personaService.obtener(id));
+        return ok(this.personaService.obtener(id));
     }
+
     @PutMapping(path = "{id}")
     public ResponseEntity<PersonaResponse> put(@RequestBody PersonaRequest request,@PathVariable Long id){
-        return ResponseEntity.ok(this.personaService.actualizar(request, id));
+        return ok(this.personaService.actualizar(request, id));
     }
+
     @DeleteMapping(path = "{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id){
         this.personaService.borrar(id);
         return ResponseEntity.noContent().build();
-    }
-    @GetMapping(path = "grupo")
-    public ResponseEntity<Set<GrupoResponse>> getGrupo(){
-        var grupo = this.personaService.categoriaGrupoPorEdades();
-        return ResponseEntity.ok(grupo);
     }
 }
